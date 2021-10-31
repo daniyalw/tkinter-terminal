@@ -1,6 +1,6 @@
 from tkinter import * # for the rest of tkinter
 from tkinter.scrolledtext import * # for the terminal widget
-import sys # for fun
+import sys # to make Multiplatform
 import os # for fun
 import subprocess # for running commands
 
@@ -11,13 +11,16 @@ class Terminal(ScrolledText):
         self._command = ""
         self._count = 0
         self.colors = {"bg":"white", "fg":"black", "insertbackground":"black"} # set widget colors
-        self.run('cmd')
+        self._all_output = list()
+        self._all_commands = list()
+        self.nocommand = False
+        self.customcommands = {}
+        self.custom = False
+        ScrolledText.__init__(self, root)
         ScrolledText.insert(self, END, self._show)
         ScrolledText.bind(self, "<Return>", self._on_enter) # set on enter func
         ScrolledText.bind(self, "<BackSpace>", self._on_back) # set backspace func
         ScrolledText.bind(self, "<Button-1>", self._on_left)
-        self._all_output = []
-        self._all_commands = []
 
     def _on_left(self, event):
         if self._count != 0:
@@ -55,16 +58,29 @@ class Terminal(ScrolledText):
             ScrolledText.insert(self, END, self._show)
         else:
             ScrolledText.insert(self, END, "\n" + self._show)
-        ScrolledText.mark_set(self, 'insert', f'end-1c')
+        ScrolledText.mark_set(self, 'insert', 'end-1c')
         ScrolledText.see(self, 'end-1c')
         return 'break'
 
+    def new_custom_command(self, command, func):
+        if not command in self.customcommands:
+            self.customcommands[command] = func
+
     def _on_enter(self, event):
+
+        if self.nocommand:
+            return
+
         all_output = ScrolledText.get(self, '1.0', 'end-1c')
         self._command = all_output.split('\n')[-1].split('>')[1]
         self._all_commands.append(self._command)
 
-        if self._command == 'cls':
+        if self.custom:
+            if self._command in self.customcommands:
+                self.customcommands[self._command]()
+                return 'break'
+
+        if self._command == 'cls' or self._command == 'clear':
             self.clear_screen()
             return 'break'
         elif self._command.strip() == '':
@@ -73,6 +89,7 @@ class Terminal(ScrolledText):
         elif self._command.strip().split()[0] == 'color':
             args = self._command.strip().split()[1:]
 
+
             for i, arg in enumerate(args):
                 if arg != 'current':
                     if '=' in arg:
@@ -80,10 +97,28 @@ class Terminal(ScrolledText):
                     else:
                         self.colors[self.__index(i, self.colors)[0]] = arg
 
-            for c in self.colors:
+            err = ""
+
+            for i, c in enumerate(self.colors):
                 if self.colors[c] == '':
                     continue
-                ScrolledText.config(self, bg=self.colors['bg'], fg=self.colors['fg'], insertbackground=self.colors['insertbackground'])
+
+                if c == "bg":
+                    try:
+                        ScrolledText.config(self, bg=self.colors[c])
+                    except TclError:
+                        err += "Invalid color name: " + self.colors[c] + "\n"
+                elif c == "fg":
+                    try:
+                        ScrolledText.config(self, fg=self.colors[c])
+                    except TclError:
+                        err += "Invalid color name: " + self.colors[c] + "\n"
+                elif c == "insert":
+                    try:
+                        ScrolledText.config(self, insertbackground=self.colors[c])
+                    except TclError:
+                        err += "Invalid color name: " + self.colors[c] + "\n"
+                self.show_output(err)
 
             self._show_dir()
             return 'break'
@@ -94,12 +129,16 @@ class Terminal(ScrolledText):
     def run(self, cmd):
         self._command = cmd
         self._all_commands.append(self._command)
-        output = subprocess.Popen(self._command.split(), stdout=subprocess.PIPE, shell=True, stderr=subprocess.STDOUT)
-        output = output.communicate()[0].decode('utf-8') # get output from tuple
-        ScrolledText.insert(self, END, "\n" + output + "\n" + self._show) # show output
-        ScrolledText.mark_set(self, 'insert', f'end-1c')
+        output = subprocess.getoutput(self._command)
+        ScrolledText.insert(self, END, "\n" + output + "\n\n" + self._show) # show output
+        ScrolledText.mark_set(self, 'insert', 'end-1c')
         ScrolledText.see(self, 'end-1c')
         self._all_output.append(output) # append output to all the outputs
+
+    def show_output(self, output):
+        ScrolledText.insert(self, END, "\n" + output + "\n\n" + self._show) # show output
+        ScrolledText.mark_set(self, 'insert', 'end-1c')
+        ScrolledText.see(self, 'end-1c')
 
     def clear_output(self):
         self._all_output = []
@@ -124,3 +163,12 @@ class Terminal(ScrolledText):
         self.colors['fg'] = fg # set fg
         self.colors['insertbackground'] = insertbackground
         ScrolledText.config(self, bg=bg, fg=fg, insertbackground=insertbackground) # configure colors
+
+if __name__ == "__main__":
+    root = Tk()
+    root.config(bg='grey7')
+    text = Terminal(root)
+    text.custom = True
+    text.pack()
+    text.dark_mode()
+    root.mainloop()
