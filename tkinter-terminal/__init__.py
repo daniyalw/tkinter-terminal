@@ -16,6 +16,7 @@ class Terminal(ScrolledText):
         self.nocommand = False
         self.customcommands = {}
         self.custom = False
+        self.is_dark = False
         ScrolledText.__init__(self, root)
         ScrolledText.insert(self, END, self._show)
         ScrolledText.bind(self, "<Return>", self._on_enter) # set on enter func
@@ -66,10 +67,10 @@ class Terminal(ScrolledText):
         if not command in self.customcommands:
             self.customcommands[command] = func
 
-    def _on_enter(self, event):
+    def get_first_element(self, command):
+        return command.strip().split(' ')[0]
 
-        if self.nocommand:
-            return
+    def _on_enter(self, event):
 
         all_output = ScrolledText.get(self, '1.0', 'end-1c')
         self._command = all_output.split('\n')[-1].split('>')[1]
@@ -80,13 +81,20 @@ class Terminal(ScrolledText):
                 self.customcommands[self._command]()
                 return 'break'
 
-        if self._command == 'cls' or self._command == 'clear':
-            self.clear_screen()
-            return 'break'
-        elif self._command.strip() == '':
+        if self.nocommand:
             self._show_dir()
             return 'break'
-        elif self._command.strip().split()[0] == 'color':
+
+        if self.get_first_element(self._command) == 'cls' or self.get_first_element(self._command) == 'clear':
+            self.clear_screen()
+            return 'break'
+        elif self.get_first_element(self._command) == '':
+            self._show_dir()
+            return 'break'
+        elif self.get_first_element(self._command) == 'cd':
+            self.show_output("Error: 'cd' command not supported in this terminal.")
+            return 'break'
+        elif self.get_first_element(self._command) == 'color':
             args = self._command.strip().split()[1:]
 
 
@@ -163,6 +171,20 @@ class Terminal(ScrolledText):
         self.colors['fg'] = fg # set fg
         self.colors['insertbackground'] = insertbackground
         ScrolledText.config(self, bg=bg, fg=fg, insertbackground=insertbackground) # configure colors
+        is_dark = True
+
+    def light_mode(self, bg='white', fg='black', insertbackground='black'):
+        self.colors['bg'] = bg # set bg
+        self.colors['fg'] = fg # set fg
+        self.colors['insertbackground'] = insertbackground
+        ScrolledText.config(self, bg=bg, fg=fg, insertbackground=insertbackground) # configure colors
+        is_dark = False
+
+    def toggle_mode():
+        if is_dark:
+            light_mode()
+        else:
+            dark_mode()
 
 if __name__ == "__main__":
     root = Tk()
