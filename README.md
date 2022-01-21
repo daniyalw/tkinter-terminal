@@ -16,7 +16,7 @@ terminal.pack()
 root.mainloop()
 ```
 
-A terminal will be shown. 
+A terminal will be shown.
 
 ## Specifications
 ### Dark mode
@@ -61,4 +61,16 @@ terminal.clear_output()
 To clear the used commands list, use the `clear_commands` method:
 ```
 terminal.clear_commands()
+```
+
+### Disable commands
+To disable all commands except for what commands you manually set:
+```
+terminal.disable_commands()
+```
+
+### Set a command
+To set a command that the user can run:
+```
+terminal.new_custom_command("my-cool-command", myfunction)
 ```

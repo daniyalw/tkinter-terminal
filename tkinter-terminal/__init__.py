@@ -54,6 +54,9 @@ class Terminal(ScrolledText):
         ScrolledText.delete(self, '1.0', END) # clear screen
         self._show_dir(cls=True)
 
+    def disable_commands(self):
+        self.nocommand = true
+
     def _show_dir(self, cls=False):
         if cls:
             ScrolledText.insert(self, END, self._show)
