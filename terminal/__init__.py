@@ -189,6 +189,15 @@ class Terminal(ScrolledText):
         else:
             dark_mode()
 
+def default():
+    root = Tk()
+    root.config(bg='grey7')
+    text = Terminal(root)
+    text.custom = True
+    text.pack()
+    text.dark_mode()
+    root.mainloop()
+
 if __name__ == "__main__":
     root = Tk()
     root.config(bg='grey7')
