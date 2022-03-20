@@ -1,0 +1,42 @@
+* {
+    box-sizing: border-box;
+    background-color: #121212;
+    color: rgb(230, 230, 230);
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system;
+}
+
+.sidenav {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: rgb(50, 50, 50);
+    overflow-x: hidden;
+}
+
+.sidenav a {
+    color: white;
+    padding: 16px;
+    text-decoration: none;
+    display: block;
+    background-color: rgb(50, 50, 50);
+}
+
+.sidenav a:hover {
+    background-color: #121212;
+}
+
+.sidenav a.active {
+    background-color: #121212;
+}
+
+.content {
+    margin-left: 200px;
+    padding-left: 20px;
+}
