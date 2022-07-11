@@ -1,6 +1,8 @@
 # terminal
 This is a terminal widget in Tkinter and Python.
 
+Note: running applications such as gcc or such, which have infinite loops, will hang this, since no new thread/process is created when executing user input. 
+
 ## Installation
 Download the folder and in command-line, travel to the 'terminal' directory. Use `pip install .`.
 
