@@ -7,7 +7,8 @@ import subprocess # for running commands
 class Terminal(ScrolledText):
     def __init__(self, root):
         self.root = root
-        self._show = os.getcwd() + '>'
+        self.path = os.getcwd()
+        self._show = self.path + '>'
         self._command = ""
         self._count = 0
         self.colors = {"bg":"white", "fg":"black", "insertbackground":"black"} # set widget colors
@@ -95,7 +96,19 @@ class Terminal(ScrolledText):
             self._show_dir()
             return 'break'
         elif self.get_first_element(self._command) == 'cd':
-            self.show_output("Error: 'cd' command not supported in this terminal.")
+            # only our second arg will be the new path - any more args and we error
+            args = self._command.strip().split()[1:]
+            switch_dir = args[0]
+
+            if len(args) > 1:
+                self.show_output(f"cd: string not in pwd: {switch_dir}")
+                return 'break'
+
+            os.chdir(switch_dir)
+            self.path = os.getcwd()
+            self._show = self.path + '>'
+
+            self._show_dir()
             return 'break'
         elif self.get_first_element(self._command) == 'color':
             args = self._command.strip().split()[1:]
@@ -118,20 +131,19 @@ class Terminal(ScrolledText):
                     try:
                         ScrolledText.config(self, bg=self.colors[c])
                     except TclError:
-                        err += "bg: Invalid color name: " + self.colors[c]
+                        err += "bg: Invalid color name: " + self.colors[c] + "\n"
                 elif c == "fg":
                     try:
                         ScrolledText.config(self, fg=self.colors[c])
                     except TclError:
-                        err += "fg:Invalid color name: " + self.colors[c]
+                        err += "fg: Invalid color name: " + self.colors[c] + "\n"
                 elif c == "insert":
                     try:
                         ScrolledText.config(self, insertbackground=self.colors[c])
                     except TclError:
-                        err += "insert: Invalid color name: " + self.colors[c]
+                        err += "insert: Invalid color name: " + self.colors[c] + "\n"
 
             self.show_output(err)
-
             return 'break'
 
         self.run(self._command)
@@ -140,14 +152,21 @@ class Terminal(ScrolledText):
     def run(self, cmd):
         self._command = cmd
         self._all_commands.append(self._command)
-        output = subprocess.getoutput(self._command)
-        ScrolledText.insert(self, END, "\n" + output + "\n\n" + self._show) # show output
+
+        output = ""
+
+        try:
+            output = subprocess.check_output(self._command, cwd=self.path, shell=True).decode()
+        except:
+            output = "Error: command failed to procede.\n"
+
+        ScrolledText.insert(self, END, "\n" + output + "\n" + self._show) # show output
         ScrolledText.mark_set(self, 'insert', 'end-1c')
         ScrolledText.see(self, 'end-1c')
         self._all_output.append(output) # append output to all the outputs
 
     def show_output(self, output):
-        ScrolledText.insert(self, END, "\n" + output + "\n\n" + self._show) # show output
+        ScrolledText.insert(self, END, "\n" + output + "\n" + self._show) # show output
         ScrolledText.mark_set(self, 'insert', 'end-1c')
         ScrolledText.see(self, 'end-1c')
 
