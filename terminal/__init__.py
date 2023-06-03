@@ -118,20 +118,20 @@ class Terminal(ScrolledText):
                     try:
                         ScrolledText.config(self, bg=self.colors[c])
                     except TclError:
-                        err += "Invalid color name: " + self.colors[c] + "\n"
+                        err += "bg: Invalid color name: " + self.colors[c]
                 elif c == "fg":
                     try:
                         ScrolledText.config(self, fg=self.colors[c])
                     except TclError:
-                        err += "Invalid color name: " + self.colors[c] + "\n"
+                        err += "fg:Invalid color name: " + self.colors[c]
                 elif c == "insert":
                     try:
                         ScrolledText.config(self, insertbackground=self.colors[c])
                     except TclError:
-                        err += "Invalid color name: " + self.colors[c] + "\n"
-                self.show_output(err)
+                        err += "insert: Invalid color name: " + self.colors[c]
 
-            self._show_dir()
+            self.show_output(err)
+
             return 'break'
 
         self.run(self._command)

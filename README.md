@@ -1,7 +1,7 @@
 # terminal
 This is a terminal widget in Tkinter and Python.
 
-Note: running applications such as gcc or such, which have infinite loops, will hang this, since no new thread/process is created when executing user input. 
+Note: running applications such as gcc or such, which have infinite loops, will hang this, since no new thread/process is created when executing user input.
 
 ## Installation
 Download the folder and in command-line, travel to the 'terminal' directory. Use `pip install .`.
@@ -76,3 +76,10 @@ To set a command that the user can run:
 ```
 terminal.new_custom_command("my-cool-command", myfunction)
 ```
+
+### To change color
+To change color:
+```
+terminal.dark_mode(bg='grey7', fg='white', insertbackground='white')
+```
+Same goes for `.light_mode()`, but the default colors are different.
